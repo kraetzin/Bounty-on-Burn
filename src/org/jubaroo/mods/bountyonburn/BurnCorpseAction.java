@@ -1,0 +1,132 @@
+
+package org.jubaroo.mods.bountyonburn;
+
+import com.wurmonline.server.Items;
+import com.wurmonline.server.Server;
+import com.wurmonline.server.behaviours.Action;
+import com.wurmonline.server.behaviours.ActionEntry;
+import com.wurmonline.server.behaviours.MethodsItems;
+import com.wurmonline.server.creatures.Communicator;
+import com.wurmonline.server.creatures.Creature;
+import com.wurmonline.server.items.Item;
+import com.wurmonline.server.items.ItemList;
+import org.gotti.wurmunlimited.modsupport.actions.ActionPerformer;
+import org.gotti.wurmunlimited.modsupport.actions.BehaviourProvider;
+import org.gotti.wurmunlimited.modsupport.actions.ModAction;
+import org.gotti.wurmunlimited.modsupport.actions.ModActions;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class BurnCorpseAction implements ModAction, ActionPerformer, BehaviourProvider {
+    public ActionEntry actionEntry;
+    private static Logger logger;
+
+    static {
+        BurnCorpseAction.logger = Logger.getLogger(BurnCorpseAction.class.getName());
+    }
+
+    BurnCorpseAction() {
+        actionEntry = ActionEntry.createEntry((short) ModActions.getNextActionId(), "Burn body", "burning", new int[]{
+                6 /* ACTION_TYPE_NO_MOVE */,
+                48 /* ACTION_TYPE_ENEMY_ALWAYS */,
+                36 /* ACTION_TYPE_ALWAYS_USE_ACTIVE_ITEM */
+        });
+        ModActions.registerAction(actionEntry);
+    }
+
+    @Override
+    public short getActionId() {
+        return actionEntry.getNumber();
+    }
+
+    @Override
+    public BehaviourProvider getBehaviourProvider() {
+        return this;
+    }
+
+    @Override
+    public ActionPerformer getActionPerformer() {
+        return this;
+    }
+
+    private boolean canUse(Creature performer, Item source, Item target) {
+        if (performer.isPlayer() && source != null && target != null && (source.isOnFire() ||
+                source.getTemplateId() == ItemList.flintSteel) &&
+                source.getTopParent() == performer.getInventory().getWurmId() &&
+                (target.getTopParent() != performer.getInventory().getWurmId())) {
+
+            return target.getTemplateId() == ItemList.corpse;
+        } else return false;
+    }
+
+    @Override
+    public List<ActionEntry> getBehavioursFor(Creature performer, Item source, Item target) {
+        if (canUse(performer, source, target))
+            return Collections.singletonList(actionEntry);
+        else
+            return null;
+    }
+
+    @Override
+    public boolean action(Action action, Creature performer, Item source, Item target, short num, float counter) {
+        try {
+            Communicator comm = performer.getCommunicator();
+            float x = performer.getPosX();
+            float y = performer.getPosY();
+
+            if (!performer.isWithinDistanceTo(target.getPosX(), target.getPosY(), performer.getPositionZ(), 4)) {
+                performer.getCommunicator().sendNormalServerMessage("You are too far away to burn the corpse.");
+                action.stop(true);
+                return true;
+            }
+            if (target.getName().contains("dragon")) {
+                comm.sendNormalServerMessage("Dragon corpses are naturally immune to fire.");
+                return true;
+            }
+            if (target.isUnique()) {
+                comm.sendNormalServerMessage(String.format("This unique creature does not seem to be affected by the %s.", source.getName()));
+                return true;
+            }
+            if (target.getTopParentOrNull() == performer.getInventory()) {
+                performer.getCommunicator().sendNormalServerMessage(String.format("You can only burn the corpse of the %s while it is on the ground.", target.getName()));
+                return true;
+            }
+            if (!MethodsItems.isLootableBy(performer, target)) {
+                performer.getCommunicator().sendNormalServerMessage(String.format("You are not allowed to burn the %s.", target.getName()));
+                return true;
+            }
+            if (target.getTemplateId() == ItemList.corpse) {
+                if (counter == 1f) {
+                    performer.getCurrentAction().setTimeLeft(Initiator.actionTime * 10);
+                    performer.sendActionControl("burning", true, Initiator.actionTime * 10);
+                    comm.sendNormalServerMessage(String.format("You touch the %s to the %s and it bursts into flames!", source.getName(), target.getName()));
+                    Server.getInstance().broadCastAction(performer.getName() + " touches the " + source.getName() + " to the " + target.getName() + " and it bursts into flames!", performer, 5);
+                    performer.playAnimation("place", false);
+                    if (Initiator.magicFire) {
+                        comm.sendAddEffect(target.getWurmId(), target.getWurmId(), (short) 27, target.getPosX(), target.getPosY(), target.getPosZ(), (byte) 0, "magicfire", Initiator.actionTime, 0f);
+                    } else {
+                        comm.sendAddEffect(target.getWurmId(), target.getWurmId(), (short) 27, target.getPosX(), target.getPosY(), target.getPosZ(), (byte) 0, "copperBrazierFire", Initiator.actionTime, 0f);
+                    }
+                } else {
+                    if (counter * 10f > action.getTimeLeft()) {
+                        Items.destroyItem(target.getWurmId());
+                        performer.addMoney(Initiator.corpseBounty);
+                        comm.sendNormalServerMessage(Initiator.bountyMessage);
+                        Initiator.jDebug(String.format("Player: %s performed BurnCorpseAction, on a %s, at Position X:%s, Y:%s", performer.getName(), target.getName(), x/4, y/4));
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "search action error", e);
+            return true;
+        }
+    }
+
+}
+
+

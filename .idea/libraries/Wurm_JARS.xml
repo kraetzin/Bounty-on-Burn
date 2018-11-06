@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="Wurm JARS">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/../Wurm JARS" />
+      <root url="file://$PROJECT_DIR$/../Wurm JARS/lib" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/../Wurm JARS" />
+    </SOURCES>
+    <jarDirectory url="file://$PROJECT_DIR$/../Wurm JARS" recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/../Wurm JARS/lib" recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/../Wurm JARS" recursive="false" type="SOURCES" />
+  </library>
+</component>
