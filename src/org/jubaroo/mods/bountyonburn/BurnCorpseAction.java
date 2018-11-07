@@ -29,7 +29,7 @@ public class BurnCorpseAction implements ModAction, ActionPerformer, BehaviourPr
     }
 
     BurnCorpseAction() {
-        actionEntry = ActionEntry.createEntry((short) ModActions.getNextActionId(), "Burn body", "burning", new int[]{
+        actionEntry = ActionEntry.createEntry((short) ModActions.getNextActionId(), "Burn corpse", "burning", new int[]{
                 6 /* ACTION_TYPE_NO_MOVE */,
                 48 /* ACTION_TYPE_ENEMY_ALWAYS */,
                 36 /* ACTION_TYPE_ALWAYS_USE_ACTIVE_ITEM */
@@ -53,18 +53,35 @@ public class BurnCorpseAction implements ModAction, ActionPerformer, BehaviourPr
     }
 
     private boolean canUse(Creature performer, Item source, Item target) {
-        if (performer.isPlayer() && source != null && target != null && (source.isOnFire() ||
-                source.getTemplateId() == ItemList.flintSteel) &&
+        int ttemp = target.getTemplateId();
+        int stemp = source.getTemplateId();
+
+        if (performer.isPlayer() && source != null && target != null &&
+                (source.isOnFire() || stemp == ItemList.flintSteel || stemp == ItemList.wandDeity) &&
                 source.getTopParent() == performer.getInventory().getWurmId() &&
                 (target.getTopParent() != performer.getInventory().getWurmId())) {
 
-            return target.getTemplateId() == ItemList.corpse;
+            return ttemp == ItemList.corpse;
+        } else return false;
+    }
+
+    private boolean canUseInForge(Creature performer, Item source, Item target) {
+        int ttemp = target.getTemplateId();
+        int stemp = source.getTemplateId();
+
+        if (performer.isPlayer() && source != null && target != null &&
+                stemp == ItemList.corpse && (ttemp == ItemList.kiln ||
+                target.isForgeOrOven() || target.isFireplace() ||
+                ttemp == ItemList.charcoalPile || ttemp == ItemList.smelter ||
+                ttemp == ItemList.campfire || Initiator.burnInForges)) {
+
+            return target.isOnFire();
         } else return false;
     }
 
     @Override
     public List<ActionEntry> getBehavioursFor(Creature performer, Item source, Item target) {
-        if (canUse(performer, source, target))
+        if (canUse(performer, source, target) || canUseInForge(performer, source, target))
             return Collections.singletonList(actionEntry);
         else
             return null;
@@ -78,7 +95,7 @@ public class BurnCorpseAction implements ModAction, ActionPerformer, BehaviourPr
             float y = performer.getPosY();
 
             if (!performer.isWithinDistanceTo(target.getPosX(), target.getPosY(), performer.getPositionZ(), 4)) {
-                performer.getCommunicator().sendNormalServerMessage("You are too far away to burn the corpse.");
+                comm.sendNormalServerMessage("You are too far away to burn the corpse.");
                 action.stop(true);
                 return true;
             }
@@ -90,15 +107,15 @@ public class BurnCorpseAction implements ModAction, ActionPerformer, BehaviourPr
                 comm.sendNormalServerMessage(String.format("This unique creature does not seem to be affected by the %s.", source.getName()));
                 return true;
             }
-            if (target.getTopParentOrNull() == performer.getInventory()) {
-                performer.getCommunicator().sendNormalServerMessage(String.format("You can only burn the corpse of the %s while it is on the ground.", target.getName()));
+            if (target.getTopParentOrNull().isVehicle()) {
+                comm.sendNormalServerMessage(String.format("You can not burn the %s while it is in the vehicle.", target.getName()));
                 return true;
             }
             if (!MethodsItems.isLootableBy(performer, target)) {
-                performer.getCommunicator().sendNormalServerMessage(String.format("You are not allowed to burn the %s.", target.getName()));
+                comm.sendNormalServerMessage(String.format("You are not allowed to burn the %s.", target.getName()));
                 return true;
             }
-            if (target.getTemplateId() == ItemList.corpse) {
+            if (canUse(performer, source, target) || canUseInForge(performer, source, target)) {
                 if (counter == 1f) {
                     performer.getCurrentAction().setTimeLeft(Initiator.actionTime * 10);
                     performer.sendActionControl("burning", true, Initiator.actionTime * 10);
@@ -112,10 +129,15 @@ public class BurnCorpseAction implements ModAction, ActionPerformer, BehaviourPr
                     }
                 } else {
                     if (counter * 10f > action.getTimeLeft()) {
-                        Items.destroyItem(target.getWurmId());
-                        performer.addMoney(Initiator.corpseBounty);
+                        if (source.getTemplateId() == ItemList.corpse) {
+                            Items.destroyItem(source.getWurmId());
+                        } else {
+                            Items.destroyItem(target.getWurmId());
+                        }
+                        performer.addMoney(Initiator.coinBounty);
+                        performer.modifyKarma(Initiator.karmaBounty);
                         comm.sendNormalServerMessage(Initiator.bountyMessage);
-                        Initiator.jDebug(String.format("Player: %s performed BurnCorpseAction, on a %s, at Position X:%s, Y:%s", performer.getName(), target.getName(), x/4, y/4));
+                        Initiator.jDebug(String.format("Player: %s performed BurnCorpseAction, on a %s, at Position X:%s, Y:%s", performer.getName(), target.getName(), x / 4, y / 4));
                         return true;
                     }
                 }

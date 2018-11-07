@@ -14,29 +14,36 @@ import java.util.logging.Logger;
 
 public class Initiator implements WurmServerMod, ServerStartedListener, Configurable, PreInitable {
     private static Logger logger;
-    static Long corpseBounty;
+    static Long coinBounty;
+    static int karmaBounty;
     static String bountyMessage;
     private static boolean debug;
     static int actionTime;
     static boolean magicFire;
+    static boolean burnInForges;
 
     static {
         logger = Logger.getLogger(Initiator.class.getName());
-        corpseBounty = 0L;
+        coinBounty = 0L;
+        karmaBounty = 0;
         bountyMessage = "Iron coin has been deposited into your bank account for burning the corpse";
         actionTime = 5;
         magicFire = true;
+        burnInForges = true;
         debug = false;
     }
 
     @Override
     public void configure(Properties properties) {
         DecimalFormat s = new DecimalFormat("#,###,###");
-        Initiator.corpseBounty = Long.valueOf(properties.getProperty("corpseBounty", Long.toString(Initiator.corpseBounty)));
+        Initiator.coinBounty = Long.valueOf(properties.getProperty("coinBounty", Long.toString(Initiator.coinBounty)));
+        Initiator.karmaBounty = Integer.parseInt(properties.getProperty("karmaBounty", Integer.toString(Initiator.karmaBounty)));
         Initiator.actionTime = Integer.valueOf(properties.getProperty("actionTime", Integer.toString(Initiator.actionTime)));
         Initiator.bountyMessage = String.valueOf(properties.getProperty("bountyMessage", String.valueOf(Initiator.bountyMessage)));
         Initiator.magicFire = Boolean.parseBoolean(properties.getProperty("magicFire", String.valueOf(Initiator.magicFire)));
+        Initiator.burnInForges = Boolean.parseBoolean(properties.getProperty("burnInForges", String.valueOf(Initiator.burnInForges)));
         Initiator.debug = Boolean.parseBoolean(properties.getProperty("debug", String.valueOf(Initiator.debug)));
+        // logging
         logger.log(Level.INFO, "========================== Bounty On Burn Mod Settings =============================");
         if (Initiator.debug) {
             logger.log(Level.INFO, "Mod Logging: Enabled");
@@ -48,7 +55,13 @@ public class Initiator implements WurmServerMod, ServerStartedListener, Configur
         } else {
             Initiator.jDebug("Normal Fire: Enabled");
         }
-        Initiator.jDebug("corpseBounty: " + s.format(Initiator.corpseBounty) + " iron coin");
+        if (Initiator.burnInForges) {
+            Initiator.jDebug("Burning In Forges/Ovens/Kilns/Campfires/Piles/Smelters: Enabled");
+        } else {
+            Initiator.jDebug("Burning In Forges/Ovens/Kilns/Campfires/Piles/Smelters: Disabled");
+        }
+        Initiator.jDebug("coinBounty: " + s.format(Initiator.coinBounty) + " iron coin");
+        Initiator.jDebug("karmaBounty: " + s.format(Initiator.karmaBounty) + " karma points");
         Initiator.jDebug("actionTime: " + Initiator.actionTime + " seconds");
         Initiator.jDebug("bountyMessage: " + Initiator.bountyMessage);
         logger.log(Level.INFO, "========================== Bounty On Burn Mod Settings =============================");
@@ -78,7 +91,7 @@ public class Initiator implements WurmServerMod, ServerStartedListener, Configur
     }
 
     public String getVersion() {
-        return "v1.0";
+        return "v1.1";
     }
 
 }
