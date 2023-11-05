@@ -8,9 +8,11 @@
   <component name="ChangeListManager">
     <list default="true" id="54158361-530a-41c0-9f30-24bdb54542a5" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bounty on Burn.iml" beforeDir="false" afterPath="$PROJECT_DIR$/Bounty on Burn.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/BountyOnBurn.properties" beforeDir="false" afterPath="$PROJECT_DIR$/BountyOnBurn.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/org/jubaroo/mods/bountyonburn/Initiator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/jubaroo/mods/bountyonburn/Initiator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Bounty on Burn/org/jubaroo/mods/bountyonburn/BurnAllAction.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Bounty on Burn/org/jubaroo/mods/bountyonburn/BurnCorpseAction.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Bounty on Burn/org/jubaroo/mods/bountyonburn/Initiator.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/org/kraetzin/mods/bountyonburn/Initiator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/kraetzin/mods/bountyonburn/Initiator.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -120,8 +122,8 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "last_opened_file_path": "/home/astraeus/prog/java/Bounty-on-Burn/WurmJARS/server.jar",
-    "project.structure.last.edited": "Modules",
+    "last_opened_file_path": "/home/astraeus/prog/java/Bounty-on-Burn/src/org/kraetzin/mods/bountyonburn",
+    "project.structure.last.edited": "Artifacts",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2"
   }

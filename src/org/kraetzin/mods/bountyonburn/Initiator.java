@@ -149,7 +149,7 @@ public class Initiator implements WurmServerMod, ServerStartedListener, Configur
             if (key.contains("_bounty")) {
                 String creature = key.replace("_bounty", "").replace("_", " ");
                 int bounty = Integer.parseInt(properties.getProperty(key));
-                Initiator.coinBountyMap.put(creature, bounty);
+                Initiator.coinBountyMap.put(creature.toLowerCase(), bounty);
                 Initiator.jDebug("Loaded bounty for creature:" + creature + ": " + bounty + " iron");
             }
         }
@@ -160,7 +160,7 @@ public class Initiator implements WurmServerMod, ServerStartedListener, Configur
             if (key.contains("_status")) {
                 String status = key.replace("_status", "").replace("_", " ");
                 float multiplier = Float.parseFloat(properties.getProperty(key));
-                Initiator.statusMultiplierMap.put(status, multiplier);
+                Initiator.statusMultiplierMap.put(status.toLowerCase(), multiplier);
                 Initiator.jDebug("Loaded multiplier for status:" + status + ": " + multiplier + "x");
             }
         }
