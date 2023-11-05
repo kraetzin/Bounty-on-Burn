@@ -1,5 +1,5 @@
 
-package org.jubaroo.mods.bountyonburn;
+package org.kraetzin.mods.bountyonburn;
 
 import com.wurmonline.server.Items;
 import com.wurmonline.server.Server;

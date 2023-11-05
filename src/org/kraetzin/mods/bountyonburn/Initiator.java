@@ -1,5 +1,5 @@
 
-package org.jubaroo.mods.bountyonburn;
+package org.kraetzin.mods.bountyonburn;
 
 import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.items.Item;
@@ -29,7 +29,7 @@ public class Initiator implements WurmServerMod, ServerStartedListener, Configur
     static boolean burnUniques;
     static boolean burnDragons;
     public static HashMap<String, Integer> coinBountyMap;
-    public static HashMap<String, Float> s
+    public static HashMap<String, Float> statusMultiplierMap;
 
     static {
         logger = Logger.getLogger(Initiator.class.getName());
@@ -91,6 +91,7 @@ public class Initiator implements WurmServerMod, ServerStartedListener, Configur
             Initiator.jDebug("Burn Dragons: Disabled");
         }
         loadBounties(properties);
+        loadStatusMultipliers(properties);
         //Initiator.jDebug("coinBounty: " + s.format(Initiator.coinBounty) + " iron coin");
         Initiator.jDebug("karmaBounty: " + s.format(Initiator.karmaBounty) + " karma points");
         Initiator.jDebug("actionTime: " + Initiator.actionTime + " seconds");
@@ -153,12 +154,28 @@ public class Initiator implements WurmServerMod, ServerStartedListener, Configur
             }
         }
     }
+    public static void loadStatusMultipliers(Properties properties) {
+        Initiator.statusMultiplierMap = new HashMap<String, Float>();
+        for (String key : properties.stringPropertyNames()) {
+            if (key.contains("_status")) {
+                String status = key.replace("_status", "").replace("_", " ");
+                float multiplier = Float.parseFloat(properties.getProperty(key));
+                Initiator.statusMultiplierMap.put(status, multiplier);
+                Initiator.jDebug("Loaded multiplier for status:" + status + ": " + multiplier + "x");
+            }
+        }
+    }
     static long getCoinBounty(Item target) {
         String tname = target.getName();
         long creature_bounty = Initiator.coinBountyDefault;
         for (String creature : coinBountyMap.keySet()) {
             if (tname.contains(creature)) {
                 creature_bounty = coinBountyMap.get(creature);
+            }
+        }
+        for (String status : statusMultiplierMap.keySet()) {
+            if (tname.contains(status)) {
+                creature_bounty *= statusMultiplierMap.get(status);
             }
         }
         return creature_bounty;
