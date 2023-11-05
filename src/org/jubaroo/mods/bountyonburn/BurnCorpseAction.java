@@ -107,9 +107,11 @@ public class BurnCorpseAction implements ModAction, ActionPerformer, BehaviourPr
                         } else {
                             Items.destroyItem(target.getWurmId());
                         }
-                        performer.addMoney(Initiator.getCoinBounty(target));
+                        long bountyReceived = Initiator.getCoinBounty(target);
+                        performer.addMoney(bountyReceived);
                         performer.modifyKarma(Initiator.karmaBounty);
-                        comm.sendNormalServerMessage(Initiator.bountyMessage);
+                        //comm.sendNormalServerMessage(Initiator.bountyMessage);
+                        comm.sendNormalServerMessage(String.format("You have received %s karma and %s for burning the corpse.", Initiator.karmaBounty, Initiator.coinConversion(bountyReceived)));
                         Initiator.jDebug(String.format("Player: %s performed BurnCorpseAction, on a %s, at Position X:%s, Y:%s", performer.getName(), target.getName(), x / 4, y / 4));
                         return true;
                     }

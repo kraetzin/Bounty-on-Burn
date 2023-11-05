@@ -141,7 +141,7 @@ public class Initiator implements WurmServerMod, ServerStartedListener, Configur
         return source != null && target != null && target.getName() != null && (source.getTemplateId() == ItemList.corpse || target.getTemplateId() == ItemList.corpse) && (tname.contains("forest giant") || tname.contains("goblin leader") || tname.contains("kyklops") || tname.contains("troll king")) || (sname.contains("forest giant") || sname.contains("goblin leader") || sname.contains("kyklops") || sname.contains("troll king"));
     }
 
-    public void loadBounties(Properties properties) {
+    public static void loadBounties(Properties properties) {
         Initiator.coinBountyMap = new HashMap<String, Integer>();
         for (String key : properties.stringPropertyNames()) {
             if (key.contains("_bounty")) {
@@ -163,8 +163,20 @@ public class Initiator implements WurmServerMod, ServerStartedListener, Configur
         return creature_bounty;
     }
 
+    static String coinConversion(long bounty) {
+        long iron = bounty % 100;
+        long copper = bounty / 100;
+        String message = "";
+        if (copper > 0) {
+            message += String.format("%sc", copper);
+        }
+        if (iron > 0) {
+            message += String.format("%si", iron);
+        }
+        return message;
+    }
+
     public String getVersion() {
         return "v1.2";
     }
-
 }
