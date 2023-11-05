@@ -47,7 +47,7 @@ public class Initiator implements WurmServerMod, ServerStartedListener, Configur
     @Override
     public void configure(Properties properties) {
         DecimalFormat s = new DecimalFormat("#,###,###");
-        Initiator.coinBountyDefault = Long.valueOf(properties.getProperty("bountyDefault", Long.toString(Initiator.coinBounty)));
+        Initiator.coinBountyDefault = Long.valueOf(properties.getProperty("bountyDefault", Long.toString(Initiator.coinBountyDefault)));
         Initiator.karmaBounty = Integer.parseInt(properties.getProperty("karmaBounty", Integer.toString(Initiator.karmaBounty)));
         Initiator.actionTime = Integer.valueOf(properties.getProperty("actionTime", Integer.toString(Initiator.actionTime)));
         Initiator.bountyMessage = String.valueOf(properties.getProperty("bountyMessage", String.valueOf(Initiator.bountyMessage)));
