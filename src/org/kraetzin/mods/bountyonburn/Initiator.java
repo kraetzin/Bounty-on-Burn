@@ -29,6 +29,7 @@ public class Initiator implements WurmServerMod, ServerStartedListener, Configur
     static boolean burnUniques;
     static boolean burnDragons;
     public static HashMap<String, Integer> coinBountyMap;
+    public static HashMap<String, Float> s
 
     static {
         logger = Logger.getLogger(Initiator.class.getName());
