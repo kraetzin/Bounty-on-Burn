@@ -11,13 +11,14 @@ import org.gotti.wurmunlimited.modloader.interfaces.WurmServerMod;
 import org.gotti.wurmunlimited.modsupport.actions.ModActions;
 
 import java.text.DecimalFormat;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Initiator implements WurmServerMod, ServerStartedListener, Configurable, PreInitable {
     private static Logger logger;
-    static Long coinBounty;
+    static Long coinBountyDefault;
     static int karmaBounty;
     static String bountyMessage;
     private static boolean debug;
@@ -27,10 +28,11 @@ public class Initiator implements WurmServerMod, ServerStartedListener, Configur
     private static boolean burnAllAction;
     static boolean burnUniques;
     static boolean burnDragons;
+    public static HashMap<String, Integer> coinBountyMap;
 
     static {
         logger = Logger.getLogger(Initiator.class.getName());
-        coinBounty = 0L;
+        coinBountyDefault = 0L;
         karmaBounty = 0;
         bountyMessage = "Iron coin has been deposited into your bank account for burning the corpse";
         actionTime = 5;
@@ -45,7 +47,7 @@ public class Initiator implements WurmServerMod, ServerStartedListener, Configur
     @Override
     public void configure(Properties properties) {
         DecimalFormat s = new DecimalFormat("#,###,###");
-        Initiator.coinBounty = Long.valueOf(properties.getProperty("coinBounty", Long.toString(Initiator.coinBounty)));
+        Initiator.coinBountyDefault = Long.valueOf(properties.getProperty("bountyDefault", Long.toString(Initiator.coinBounty)));
         Initiator.karmaBounty = Integer.parseInt(properties.getProperty("karmaBounty", Integer.toString(Initiator.karmaBounty)));
         Initiator.actionTime = Integer.valueOf(properties.getProperty("actionTime", Integer.toString(Initiator.actionTime)));
         Initiator.bountyMessage = String.valueOf(properties.getProperty("bountyMessage", String.valueOf(Initiator.bountyMessage)));
@@ -87,7 +89,8 @@ public class Initiator implements WurmServerMod, ServerStartedListener, Configur
         } else {
             Initiator.jDebug("Burn Dragons: Disabled");
         }
-        Initiator.jDebug("coinBounty: " + s.format(Initiator.coinBounty) + " iron coin");
+        loadBounties(properties);
+        //Initiator.jDebug("coinBounty: " + s.format(Initiator.coinBounty) + " iron coin");
         Initiator.jDebug("karmaBounty: " + s.format(Initiator.karmaBounty) + " karma points");
         Initiator.jDebug("actionTime: " + Initiator.actionTime + " seconds");
         Initiator.jDebug("bountyMessage: " + Initiator.bountyMessage);
@@ -136,6 +139,28 @@ public class Initiator implements WurmServerMod, ServerStartedListener, Configur
         String tname = target.getName();
         String sname = source.getName();
         return source != null && target != null && target.getName() != null && (source.getTemplateId() == ItemList.corpse || target.getTemplateId() == ItemList.corpse) && (tname.contains("forest giant") || tname.contains("goblin leader") || tname.contains("kyklops") || tname.contains("troll king")) || (sname.contains("forest giant") || sname.contains("goblin leader") || sname.contains("kyklops") || sname.contains("troll king"));
+    }
+
+    public void loadBounties(Properties properties) {
+        Initiator.coinBountyMap = new HashMap<String, Integer>();
+        for (String key : properties.stringPropertyNames()) {
+            if (key.contains("_bounty")) {
+                String creature = key.replace("_bounty", "").replace("_", " ");
+                int bounty = Integer.parseInt(properties.getProperty(key));
+                Initiator.coinBountyMap.put(creature, bounty);
+                Initiator.jDebug("Loaded bounty for creature:" + creature + ": " + bounty + " iron");
+            }
+        }
+    }
+    static long getCoinBounty(Item target) {
+        String tname = target.getName();
+        long creature_bounty = Initiator.coinBountyDefault;
+        for (String creature : coinBountyMap.keySet()) {
+            if (tname.contains(creature)) {
+                creature_bounty = coinBountyMap.get(creature);
+            }
+        }
+        return creature_bounty;
     }
 
     public String getVersion() {
